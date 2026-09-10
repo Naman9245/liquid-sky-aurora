@@ -1,0 +1,21 @@
+# ─── Runtime data ─────────────────────────────────────────────────────
+# The database holds real bookings and real customer phone numbers.
+# Back it up by copying the file, never by committing it.
+server/data/
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+# ─── Secrets ──────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── OS / editor noise ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+.vscode/
+.idea/
