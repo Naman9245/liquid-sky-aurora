@@ -1,0 +1,7 @@
+# The database and its write-ahead log. Never commit these — they hold real
+# customer names and phone numbers.
+data/
+*.db
+*.db-wal
+*.db-shm
+*.db-journal

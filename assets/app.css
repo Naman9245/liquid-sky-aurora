@@ -1,0 +1,880 @@
+/* =====================================================================
+   LIQUID SKY — variant C "Aurora"
+   Glass panels floating on a live sky. The sky is the effect; panels are
+   CSS glass, which keeps one WebGL context instead of eight.
+   ===================================================================== */
+:root {
+  /* Sampled across all ten seconds of the loader film — prep, fire,
+     plating, then the room full of guests. It is a very low-key grade:
+     #080808 alone is 9.7% of all pixels, and nothing common is brighter
+     than #684828. So the site is dark walnut with warm mid-tones, and the
+     cucumber green from the opening shot is the only cool accent. */
+  --ink:        #F3E9DC;   /* warm off-white, not the old cool cream */
+  --ink-soft:   rgba(243,233,220,.74);
+  --ink-faint:  rgba(243,233,220,.48);
+
+  --walnut-0:   #0C0906;   /* the surround */
+  --walnut-1:   #171008;   /* deep shadow on the board */
+  --walnut-2:   #382818;   /* board mid-tone  (8.3% of frame) */
+  --walnut-3:   #583828;   /* lit board       (6.0%) */
+  --tan:        #684828;   /* brightest common tone (2.1%) */
+  --tan-lt:     #8A6440;
+
+  --amber:      #E07B2E;   /* the warm key light, pulled deeper than before */
+  --amber-deep: #C25A15;
+  --fresh:      #7FA653;   /* cucumber — the one cool accent in the film */
+
+  --rule:       rgba(243,233,220,.14);
+
+  /* Glass now reads as warm smoked glass over walnut, not cool violet. */
+  --glass:      rgba(30,20,12,.46);
+  --glass-edge: rgba(243,233,220,.18);
+  --glass-lo:   rgba(12,9,6,.6);
+
+  --display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --body:    "Manrope", ui-sans-serif, -apple-system, "Segoe UI", sans-serif;
+  --mono:    "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --pad: clamp(18px, 4vw, 40px);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  font-family: var(--body);
+  color: var(--ink);
+  background: var(--walnut-0);    /* painted, so the page never shows host ground */
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* the live sky sits behind everything */
+#sky {
+  position: fixed; inset: 0; z-index: 0;
+  width: 100%; height: 100%; display: block;
+  pointer-events: none;
+}
+/* CSS fallback if WebGL is unavailable — still a dusk sky, just static */
+#sky-fallback {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(60% 40% at 72% 78%, rgba(255,154,60,.55), transparent 70%),
+    linear-gradient(180deg, #0C0906 0%, #241608 45%, #6B3A18 78%, #C88348 100%);
+}
+/* Readability scrim.
+
+   A sky that honestly tracks the clock swings from near-black at midnight
+   to bright haze at noon — and light type dies against the bright end.
+   Rather than flip the whole palette twice a day (which would make the
+   brand read differently at lunch than at dinner), a single dark veil
+   sits between sky and content, and JS weights it by time of day: heavy
+   at noon, almost absent at midnight. The sky's hue, clouds, sun and
+   stars all still read through it; the type never drops below contrast. */
+#sky-veil {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% 0%, rgba(6,4,12,calc(var(--veil, .55) * .55)), transparent 70%),
+    linear-gradient(180deg,
+      rgba(6,4,12, calc(var(--veil, .55) * 1.05)) 0%,
+      rgba(6,4,12, calc(var(--veil, .55) * .72)) 42%,
+      rgba(10,5,14, calc(var(--veil, .55) * .92)) 100%);
+  transition: background .8s linear;
+}
+.page { position: relative; z-index: 1; }
+
+.shell { width: min(1180px, calc(100% - 2 * var(--pad))); margin: 0 auto; }
+
+/* ---------- typography ---------- */
+.mono {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
+  text-transform: uppercase; line-height: 1.6; color: var(--ink-soft);
+}
+h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; letter-spacing: -.01em; }
+h1 { font-size: clamp(58px, 13vw, 168px); line-height: .88; }
+h2 { font-size: clamp(30px, 5vw, 62px); line-height: 1.02; }
+h3 { font-size: clamp(19px, 2.2vw, 26px); line-height: 1.15; }
+h1 em, h2 em { font-style: italic; color: var(--amber); }
+p { line-height: 1.65; }
+
+/* ---------- glass ---------- */
+.glass {
+  position: relative;
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  backdrop-filter: blur(22px) saturate(1.25);
+  border: 1px solid var(--glass-edge);
+  border-radius: 18px;
+  box-shadow:
+    0 26px 62px -30px rgba(6,4,2,.82),
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -1px 0 rgba(224,123,46,.16);
+  overflow: hidden;
+}
+/* specular sheen — the "liquid" read, static so it costs nothing per frame */
+.glass::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background:
+    linear-gradient(115deg, rgba(255,255,255,.16) 0%, transparent 34%),
+    radial-gradient(120% 60% at 8% 0%, rgba(255,255,255,.12), transparent 60%);
+}
+.glass > * { position: relative; z-index: 1; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: rgba(22,15,9,.90); }
+}
+
+/* ---------- scroll reveal ---------- */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s cubic-bezier(.22,.61,.36,1), transform .7s cubic-bezier(.22,.61,.36,1); transition-delay: var(--delay, 0ms); }
+.reveal.is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+/* ---------- buttons ---------- */
+.btn {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+  padding: 14px 22px; border-radius: 999px; border: 1px solid var(--glass-edge);
+  background: rgba(255,255,255,.07); color: var(--ink); cursor: pointer;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+  transition: transform .18s cubic-bezier(.22,.61,.36,1), background .2s, border-color .2s;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.34); }
+.btn:active { transform: translateY(0) scale(.98); }
+.btn--solid { background: var(--amber-deep); border-color: transparent; color: #fff; box-shadow: 0 10px 30px -10px rgba(230,92,0,.8); }
+.btn--solid:hover { background: #ff6a0a; }
+:where(a, button, input, select, [tabindex]):focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 6px; }
+
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+
+/* =====================================================================
+   NAV — live status is the point: the sky already hints open/closed,
+   the pill states it.
+   ===================================================================== */
+.nav { position: sticky; top: 14px; z-index: 60; margin: 14px auto 0; }
+.nav-in { display: flex; align-items: center; gap: 16px; padding: 12px 12px 12px 20px; border-radius: 999px; }
+.brand { font-family: var(--display); font-size: 19px; letter-spacing: .01em; white-space: nowrap; }
+.brand span { color: var(--amber); }
+.nav-links { display: flex; gap: 18px; margin: 0 auto; font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
+.nav-links a { color: var(--ink-soft); text-decoration: none; transition: color .18s; }
+.nav-links a:hover { color: var(--ink); }
+.nav-right { display: flex; align-items: center; gap: 8px; flex: none; }
+
+.status { display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--glass-edge); white-space: nowrap; }
+.status i { width: 7px; height: 7px; border-radius: 50%; background: var(--fresh); box-shadow: 0 0 0 0 rgba(127,166,83,.7); animation: pulse 2.4s infinite; }
+.status.is-shut i { background: #E0604A; animation: none; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 7px rgba(127,166,83,0); } 100% { box-shadow: 0 0 0 0 rgba(127,166,83,0); } }
+@media (prefers-reduced-motion: reduce) { .status i { animation: none; } }
+
+.cart-btn { position: relative; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07); color: var(--ink); cursor: pointer; }
+.cart-badge { position: absolute; top: -5px; right: -5px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: var(--amber-deep); color: #fff; font-family: var(--mono); font-size: 10px; display: grid; place-items: center; }
+.cart-badge[hidden] { display: none; }
+
+/* ===================================================================== HERO */
+.hero { min-height: clamp(560px, 88vh, 900px); display: grid; align-content: center; gap: 26px; padding: 8vh 0 6vh; }
+.hero h1 { max-width: 12ch; }
+.hero-lede { max-width: 46ch; font-size: clamp(15px, 1.5vw, 18px); color: var(--ink-soft); margin: 0; }
+.hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.hero-meta { display: flex; gap: 28px; flex-wrap: wrap; padding-top: 8px; }
+.hero-meta b { display: block; font-family: var(--display); font-size: 30px; line-height: 1; }
+.scroll-cue { font-family: var(--mono); font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-faint); display: inline-flex; align-items: center; gap: 9px; }
+.scroll-cue::after { content: ""; width: 42px; height: 1px; background: currentColor; animation: cue 2.6s ease-in-out infinite; transform-origin: left; }
+@keyframes cue { 0%,100% { transform: scaleX(.35); opacity: .5 } 50% { transform: scaleX(1); opacity: 1 } }
+@media (prefers-reduced-motion: reduce) { .scroll-cue::after { animation: none; } }
+
+/* ===================================================================== BANDS */
+.band { padding: clamp(60px, 9vw, 120px) 0; }
+.band-head { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 34px; }
+.eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+
+.statement-band { padding: clamp(40px, 6vw, 80px) 0 clamp(30px, 5vw, 60px); }
+.statement { font-family: var(--display); font-size: clamp(26px, 4vw, 52px); line-height: 1.14; max-width: 26ch; margin: 0; }
+.statement .dim { color: var(--ink-faint); }
+
+/* ===================================================================== PLATES
+   The dish photographs came cut out on transparency, so they are not put
+   in frames: each one stands on the page over an elliptical pool of amber
+   light, the way a plate sits under a downlight. A card border round a
+   cut-out is exactly what makes it read as a sticker.
+
+   The shot box is a fixed height with a flex-end image, NOT aspect-ratio
+   plus max-height — on a grid item that pairing does not clamp, which is
+   what let a canvas escape its panel earlier in this build. */
+.plates { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: clamp(10px, 1.6vw, 24px); }
+/* Eight plates: four columns lands as two full rows rather than orphans. */
+@media (min-width: 1100px) { .plates { grid-template-columns: repeat(4, 1fr); } }
+
+.dish { --shot-h: clamp(130px, 15vw, 176px); position: relative; text-align: center; padding: 10px 10px 18px;
+        display: grid; grid-template-rows: auto 1fr; }
+.dish-shot { position: relative; height: var(--shot-h); display: flex; align-items: flex-end; justify-content: center; }
+/* the pool of light the dish sits in */
+.dish-shot::before {
+  content: ""; position: absolute; left: 50%; bottom: 0; width: 74%; height: 30%;
+  transform: translateX(-50%); border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 50%, rgba(224,123,46,.30), rgba(224,123,46,.09) 55%, transparent 72%);
+  filter: blur(7px);
+  transition: width .45s cubic-bezier(.22,.61,.36,1), opacity .45s ease;
+}
+.dish-img {
+  position: relative; max-width: 100%; max-height: var(--shot-h);
+  width: auto; height: auto; display: block;
+  filter: drop-shadow(0 15px 19px rgba(6,4,2,.62));
+  transition: transform .5s cubic-bezier(.22,.61,.36,1), filter .5s ease;
+}
+.dish:hover .dish-img { transform: translateY(-9px) scale(1.05); filter: drop-shadow(0 26px 30px rgba(6,4,2,.72)); }
+.dish:hover .dish-shot::before { width: 88%; opacity: .6; }
+
+/* auto / 1fr / auto puts the price and Add button on the bottom edge of
+   the card whatever the note wraps to, so a row of dishes shares one
+   button baseline at every width — a min-height guess only worked at the
+   one width it was measured at. */
+.dish-body { display: grid; grid-template-rows: auto 1fr auto; gap: 6px; margin-top: 15px; }
+.dish-body h3 { font-size: clamp(17px, 1.5vw, 20px); line-height: 1.18; }
+.dish-body p { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+.dish-foot { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 3px; }
+.dish-price { font-family: var(--display); font-size: 21px; color: var(--amber); }
+.btn--mini { padding: 9px 15px; font-size: 9px; letter-spacing: .14em; }
+
+/* ======================================================================= BAR
+   Its own section rather than a shelf inside the menu. Same cut-out
+   treatment, but glasses want a surface: a drawn counter line and a
+   reflection instead of a pool of light. */
+.bar-rail { display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr)); gap: clamp(8px, 1.4vw, 20px); }
+@media (min-width: 900px) { .bar-rail { grid-template-columns: repeat(5, 1fr); } }
+
+.pour { --shot-h: clamp(164px, 20vw, 222px); --refl-h: calc(var(--shot-h) * .26);
+        position: relative; text-align: center; padding: 6px 8px 18px;
+        display: grid; grid-template-rows: auto 1fr; }
+.pour-shot { position: relative; height: var(--shot-h); display: flex; align-items: flex-end; justify-content: center; }
+/* The counter. Negative insets let neighbouring segments meet, so five
+   separate cards read as one continuous bar top. */
+.pour-shot::after {
+  content: ""; position: absolute; left: -9%; right: -9%; bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(243,233,220,.26) 20%,
+                              rgba(243,233,220,.26) 80%, transparent);
+}
+.pour-img {
+  position: relative; max-width: 100%; max-height: var(--shot-h);
+  width: auto; height: auto; display: block;
+  filter: drop-shadow(0 13px 17px rgba(6,4,2,.66));
+  transition: transform .5s cubic-bezier(.22,.61,.36,1);
+}
+.pour:hover .pour-img { transform: translateY(-7px); }
+/* Reflection: a full-size flipped copy inside a short clipping box, so
+   what shows is the mirrored *base* of the glass — not a whole small
+   glass shrunk to fit, which is what max-height on the image alone gives. */
+.pour-reflect {
+  position: absolute; left: 0; right: 0; top: 100%;
+  height: var(--refl-h); overflow: hidden; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent 88%);
+          mask-image: linear-gradient(to bottom, rgba(0,0,0,.55), transparent 88%);
+}
+.pour-reflect img {
+  position: absolute; left: 50%; top: 0;
+  max-width: 100%; max-height: var(--shot-h); width: auto; height: auto;
+  transform: translateX(-50%) scaleY(-1);
+}
+.pour-body { display: grid; grid-template-rows: auto auto 1fr auto; gap: 5px; margin-top: calc(var(--refl-h) + 10px); }
+.pour-kind { font-size: 9px; letter-spacing: .16em; color: var(--ink-faint); }
+.pour-body h3 { font-size: clamp(18px, 1.6vw, 22px); line-height: 1.15; }
+.pour-body p { margin: 0; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+.pour-price { font-family: var(--display); font-size: 21px; color: var(--amber); }
+
+/* ====================================================================== ROOM
+   A full-bleed still. The photograph was composed with the subject hard
+   right and an empty stretch of dark table on the left, so the copy goes
+   in that empty half and the scrim runs sideways. Under 820px there is no
+   empty half left to use, so the scrim turns vertical and the copy drops
+   to the bottom of the frame instead. */
+.filmstrip {
+  position: relative; isolation: isolate; overflow: hidden;
+  min-height: clamp(300px, 44vw, 520px);
+  display: grid; align-items: end;
+  margin: clamp(30px, 6vw, 74px) 0;
+}
+.filmstrip-img {
+  position: absolute; inset: 0; z-index: 0; display: block;
+  width: 100%; height: 100%; object-fit: cover; object-position: 72% 50%;
+}
+.filmstrip-scrim {
+  position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(to top, var(--walnut-0) 1%, rgba(12,9,6,.88) 26%,
+                              rgba(12,9,6,.32) 58%, rgba(12,9,6,.04) 82%),
+              linear-gradient(to bottom, rgba(12,9,6,.5), transparent 38%);
+}
+.filmstrip-copy { position: relative; z-index: 2; display: grid; gap: 12px;
+                  padding-bottom: clamp(24px, 5vw, 52px); }
+/* The copy sits over whatever the photograph happens to put behind it. The
+   headline and lede measured 11.6:1 and 8.2:1 against the frame scrim, but
+   the amber eyebrow came out at 1.55:1 — it rides higher in the frame,
+   where the scrim is weak and the blurred room behind is bright. Darkening
+   the whole frame enough to fix that would flatten the picture, so the copy
+   carries its own soft plate instead, sized to the text and invisible past
+   it. */
+.filmstrip-copy::before {
+  content: ""; position: absolute; z-index: -1; pointer-events: none;
+  left: -7%; right: -7%; top: -22%; bottom: -18%;
+  /* Vertical only. A radial left the top-left corner — where the eyebrow
+     actually sits — uncovered, and adding a horizontal fade wide enough to
+     reach the text dimmed 60% of the photograph with it. The copy sits at
+     the bottom of the frame here, where the band scrim is already dark, so
+     a top-weighted fade is invisible on the picture and does all the work. */
+  background: linear-gradient(to bottom, rgba(12,9,6,.86) 0%, rgba(12,9,6,.62) 46%,
+                              rgba(12,9,6,.30) 78%, rgba(12,9,6,0) 100%);
+}
+.filmstrip-copy h2 { font-size: clamp(29px, 5vw, 58px); }
+.filmstrip-copy p { margin: 0; max-width: 44ch; font-size: 14.5px; line-height: 1.62; color: var(--ink-soft); }
+@media (min-width: 820px) {
+  .filmstrip { align-items: center; }
+  .filmstrip-scrim {
+    background: linear-gradient(100deg, var(--walnut-0) 1%, rgba(12,9,6,.9) 25%,
+                                rgba(12,9,6,.44) 49%, rgba(12,9,6,.05) 76%),
+                linear-gradient(to top, rgba(12,9,6,.62), transparent 28%);
+  }
+  .filmstrip-copy { padding-bottom: 0; }
+  .filmstrip-copy > * { max-width: 33ch; }
+  /* Measured: the side scrim already sits at ~0.99 behind the copy at this
+     width (eyebrow 6.7:1 on the scrim alone), so a plate here would only
+     mute the photograph for nothing. */
+  .filmstrip-copy::before { background: none; }
+}
+
+.veg { width: 13px; height: 13px; border: 1.5px solid var(--fresh); border-radius: 3px; display: inline-grid; place-items: center; flex: none; }
+.veg::after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--fresh); }
+.veg.is-non { border-color: #E0604A; }
+.veg.is-non::after { background: #E0604A; }
+
+/* ===================================================================== MENU */
+.menu-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 18px; }
+.menu-search { flex: 1 1 240px; position: relative; }
+.menu-search input {
+  width: 100%; font: inherit; font-size: 14px; color: var(--ink);
+  padding: 13px 16px; border-radius: 999px;
+  border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.menu-search input::placeholder { color: var(--ink-faint); }
+/* ---- veg / non-veg switch ------------------------------------------
+   Three positions, not two. Seven of the thirteen categories hold no
+   non-vegetarian item at all (breads, sides, desserts and the whole bar),
+   so a plain two-way toggle would have no way back to the full 287. */
+.diet { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px;
+        border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07);
+        -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.diet-opt {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase;
+  padding: 10px 14px; border-radius: 999px; border: 0; background: transparent;
+  color: var(--ink-faint); cursor: pointer; white-space: nowrap;
+  transition: background-color .2s ease, color .2s ease;
+}
+.diet-opt:hover { color: var(--ink); }
+.diet-opt[aria-pressed="true"] { background: var(--ink); color: #17120F; }
+/* while a clip is rolling the switch is inert — a second press mid-film
+   would leave the overlay and the list disagreeing about which side won */
+.diet[data-busy="true"] .diet-opt { cursor: progress; }
+/* The list only changes when the clip lifts, so without this the chip you
+   just pressed sits unlit for three full seconds and reads as a dead tap. */
+.diet-opt[data-pending="true"] {
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--amber);
+}
+.diet[data-busy="true"] .diet-opt:not([data-pending="true"]) { opacity: .5; }
+
+/* ---- the clip that covers the swap --------------------------------- */
+.menu-panel { min-height: 320px; }
+.switch-film {
+  position: absolute; inset: 0; z-index: 5;
+  display: grid; place-items: center;
+  background: var(--walnut-0);
+  opacity: 0; pointer-events: none; transition: opacity .34s ease;
+}
+.switch-film[data-on="true"] { opacity: 1; }
+.switch-video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0; transition: opacity .2s ease;
+}
+.switch-video[data-active="true"] { opacity: 1; }
+/* the clips are bright kitchen footage; the label needs its own ground */
+.switch-film::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(12,9,6,.88), rgba(12,9,6,.26) 52%, rgba(12,9,6,.66));
+}
+.switch-label {
+  position: relative; z-index: 1;
+  font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--ink);
+  /* Measured against a frame of each clip: on the band scrim alone the
+     label came out at 3.68:1 over the smoke in the grill shot. It carries
+     its own ground rather than darkening the whole picture for it. */
+  padding: 11px 20px; border-radius: 999px;
+  background: rgba(12,9,6,.66);
+  border: 1px solid rgba(243,233,220,.16);
+  -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .switch-film { transition: none; }
+}
+
+.cats { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 20px; }
+.cat { font-family: var(--mono); font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--rule); background: transparent; color: var(--ink-faint); cursor: pointer; transition: all .2s; }
+.cat:hover { color: var(--ink); border-color: var(--glass-edge); }
+.cat[aria-selected="true"] { background: var(--ink); color: #17120F; border-color: var(--ink); }
+
+.menu-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2px 26px; padding: 6px 4px 4px; }
+.row { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 12px; padding: 12px 6px; border-bottom: 1px solid var(--rule); }
+.row-name { font-size: 14.5px; }
+.row-price { font-family: var(--mono); font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.row-price.is-ask { color: var(--ink-faint); font-size: 10px; letter-spacing: .1em; }
+.row-add { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07); color: var(--ink); font-size: 17px; line-height: 1; cursor: pointer; transition: all .18s; }
+.row-add:hover { background: var(--amber-deep); border-color: transparent; transform: scale(1.12); }
+.menu-empty { padding: 40px 6px; color: var(--ink-faint); }
+
+/* ===================================================================== REVIEWS */
+.reviews { display: grid; grid-template-columns: minmax(0,.8fr) minmax(0,1.6fr); gap: 16px; }
+.score { padding: 28px; display: grid; gap: 10px; align-content: start; }
+.score b { font-family: var(--display); font-size: 68px; line-height: .9; }
+.score b span { font-size: 22px; color: var(--ink-faint); }
+.stars { color: var(--amber); letter-spacing: 3px; }
+.themes { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.theme { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--ink-soft); }
+.quotes { display: grid; gap: 12px; }
+.quote { padding: 20px 22px; }
+.quote p { margin: 0 0 10px; font-family: var(--display); font-size: 18px; line-height: 1.45; }
+.quote footer { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* ===================================================================== VISIT */
+.visit { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap: 16px; align-items: stretch; }
+.map-link { display: block; text-decoration: none; border-radius: 18px; overflow: hidden; position: relative; min-height: 300px; }
+.map-link img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.map-badge { position: absolute; left: 16px; bottom: 16px; }
+.visit-card { padding: 28px; display: grid; gap: 20px; align-content: start; }
+.facts { display: grid; gap: 14px; margin: 0; }
+.facts > div { display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+.facts dt { color: var(--ink-faint); }
+.facts dd { margin: 0; font-size: 14px; line-height: 1.55; }
+.facts a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--amber); }
+
+/* the flyover note — the single most useful thing on the page, from the
+   reviews: people genuinely drive past because of the flyover */
+.flyover { padding: 20px 22px; border-left: 2px solid var(--amber); border-radius: 0 14px 14px 0; }
+.flyover strong { display: block; font-family: var(--display); font-size: 19px; margin-bottom: 6px; }
+.flyover p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+
+/* ===================================================================== RESERVE */
+.reserve { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 16px; }
+.form-card { padding: 28px; }
+.field { margin-bottom: 14px; }
+.field label { display: block; margin-bottom: 7px; }
+.field input, .field select {
+  width: 100%; font: inherit; font-size: 15px; color: var(--ink);
+  padding: 13px 15px; border-radius: 12px;
+  border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07);
+}
+.field select option { background: #1a1420; color: var(--ink); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.reserve-figure { border-radius: 18px; overflow: hidden; min-height: 320px; }
+.reserve-figure img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ===================================================================== FOOT */
+.foot { padding: 40px 0 60px; display: flex; gap: 18px; justify-content: space-between; flex-wrap: wrap; border-top: 1px solid var(--rule); }
+
+/* ===================================================================== CART + CHAT */
+.scrim { position: fixed; inset: 0; z-index: 88; background: rgba(8,5,3,.66); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.scrim[hidden] { display: none; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 89; width: min(400px, 100%); display: flex; flex-direction: column; background: rgba(20,14,8,.95); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); border-left: 1px solid var(--glass-edge); transform: translateX(100%); transition: transform .32s cubic-bezier(.22,.61,.36,1); }
+.drawer[data-open="true"] { transform: translateX(0); }
+@media (prefers-reduced-motion: reduce) { .drawer { transition: none; } }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px; border-bottom: 1px solid var(--rule); }
+.drawer-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 8px 20px 14px; }
+.drawer-foot { border-top: 1px solid var(--rule); padding: 18px 20px 22px; display: grid; gap: 10px; }
+.line { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--rule); }
+.qty { display: inline-flex; align-items: center; gap: 10px; }
+.qty button { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07); color: var(--ink); cursor: pointer; line-height: 1; }
+.icon-btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07); color: var(--ink); cursor: pointer; display: grid; place-items: center; font-size: 17px; }
+
+.fab { position: fixed; right: 18px; bottom: 18px; z-index: 86; width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--glass-edge); background: rgba(28,19,11,.74); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--ink); cursor: pointer; display: grid; place-items: center; font-size: 20px; box-shadow: 0 16px 40px -16px rgba(0,0,0,.8); }
+.fab[hidden] { display: none; }
+.chat { position: fixed; right: 18px; bottom: 18px; z-index: 87; width: min(360px, calc(100% - 36px)); max-height: min(560px, calc(100% - 40px)); display: flex; flex-direction: column; border-radius: 18px; }
+.chat[hidden] { display: none; }
+.chat-log { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 16px; display: grid; gap: 10px; align-content: start; }
+.msg { max-width: 84%; padding: 11px 14px; border-radius: 14px; font-size: 14px; line-height: 1.5; }
+.msg-bot { justify-self: start; background: rgba(255,255,255,.09); }
+.msg-me { justify-self: end; background: var(--amber-deep); color: #fff; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 12px; }
+.chip { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; padding: 7px 11px; border-radius: 999px; border: 1px solid var(--rule); background: transparent; color: var(--ink-soft); cursor: pointer; }
+.chip:hover { background: rgba(255,255,255,.1); }
+.chat-form { display: flex; gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--rule); }
+.chat-form input { flex: 1; font: inherit; font-size: 14px; color: var(--ink); padding: 11px 14px; border-radius: 999px; border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07); }
+
+.toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(12px); z-index: 95; padding: 12px 20px; border-radius: 999px; background: rgba(20,14,8,.95); border: 1px solid var(--glass-edge); opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; }
+.toast.is-on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===================================================================== RESPONSIVE */
+@media (max-width: 900px) {
+  .reviews, .visit, .reserve { grid-template-columns: 1fr; }
+  .map-link, .reserve-figure { min-height: 260px; }
+}
+@media (max-width: 680px) {
+  .nav-links { display: none; }
+  .two { grid-template-columns: 1fr; }
+  .hero-meta { gap: 20px; }
+  .menu-list { grid-template-columns: 1fr; }
+  .status .status-txt { display: none; }
+}
+
+
+/* ===================================================================== CRAFT
+   Three kitchens under one roof — the thing that actually distinguishes
+   this place. Char & Co earns its story section; this is ours, but built
+   around what Liquid Sky genuinely runs rather than a founder portrait. */
+.craft { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
+.craft-card { padding: 0; display: flex; flex-direction: column; }
+.craft-card figure { margin: 0; aspect-ratio: 5/4; overflow: hidden; }
+.craft-card img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .9s cubic-bezier(.22,.61,.36,1); }
+.craft-card:hover img { transform: scale(1.05); }
+.craft-body { padding: 22px 24px 26px; display: grid; gap: 10px; align-content: start; flex: 1; }
+.craft-num { font-family: var(--mono); font-size: 10px; letter-spacing: .2em; color: var(--amber); }
+.craft-body p { margin: 0; font-size: 14px; color: var(--ink-soft); }
+.craft-meta { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; gap: 10px; }
+@media (max-width: 900px) { .craft { grid-template-columns: 1fr; } }
+
+
+/* ===================================================================== PERF
+   backdrop-filter is the expensive part of CSS glass, and there were 18
+   layers of it. The craft cards are mostly photograph — blurring the sky
+   behind an opaque image buys nothing but costs a full backdrop pass
+   each. Those get a flat translucent fill instead; the panels that
+   actually sit on open sky keep the real blur. The plate and pour cards
+   dropped out of this list entirely when they became bare cut-outs: no
+   panel, so no backdrop pass at all. */
+.craft-card {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgba(26, 18, 11, .74);
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .craft-card { background: rgba(22, 15, 9, .92); }
+}
+
+/* inline action link inside a chat reply */
+.msg-link { display: block; margin-top: 9px; font-family: var(--mono); font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--amber); text-decoration: none; }
+.msg-bot .msg-link:hover { text-decoration: underline; }
+
+/* typing indicator while the model is thinking */
+.is-typing { display: inline-flex; gap: 4px; align-items: center; padding: 14px 16px; }
+.is-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); animation: blink 1.3s infinite; }
+.is-typing span:nth-child(2) { animation-delay: .18s; }
+.is-typing span:nth-child(3) { animation-delay: .36s; }
+@keyframes blink { 0%,60%,100% { opacity:.28 } 30% { opacity:1 } }
+@media (prefers-reduced-motion: reduce) { .is-typing span { animation: none; opacity:.6 } }
+
+/* =====================================================================
+   SCROLL SPLIT — the shutters part and the live sky opens behind.
+
+   Same technique as the reference site: two copies of one image, each
+   clipped to half with clip-path, driven apart by scroll progress. Here
+   the thing revealed is the WebGL sky that is already running, so the
+   effect explains the name rather than just decorating.
+
+   Driven by a CSS variable (--split, 0 to 1) set from a scroll listener,
+   so the animation itself stays on the compositor.
+   ===================================================================== */
+/* 220vh against a 100vh sticky stage gives ~120vh of scroll runway, so the
+   shutters open over a full screen of movement rather than snapping open in
+   the first 150px. */
+.split { position: relative; height: 220vh; }
+.split-stage {
+  position: sticky; top: 0; height: 100vh;
+  overflow: hidden; display: grid; place-items: center;
+}
+.split-half {
+  position: absolute; inset: 0;
+  /* background-image is set inline by JS — see the note in app.js */
+  background-size: cover; background-position: center;
+  will-change: transform;
+}
+/* top and bottom halves, parting vertically */
+.split-half.is-top {
+  clip-path: inset(0 0 50% 0);
+  transform: translate3d(0, calc(var(--split, 0) * -52%), 0);
+}
+.split-half.is-bot {
+  clip-path: inset(50% 0 0 0);
+  transform: translate3d(0, calc(var(--split, 0) * 52%), 0);
+}
+/* a warm seam that glows as the halves separate */
+.split-seam {
+  position: absolute; left: 0; right: 0; top: 50%; height: 2px;
+  transform: translateY(-1px) scaleX(calc(.2 + var(--split, 0) * .8));
+  background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  opacity: calc(var(--split, 0) * .9);
+  filter: blur(1px);
+}
+.split-copy {
+  position: relative; z-index: 2; text-align: center; max-width: 22ch;
+  opacity: calc((var(--split, 0) - .45) * 2.4);
+  transform: translate3d(0, calc((1 - var(--split, 0)) * 26px), 0);
+}
+.split-copy h2 { margin: 0 0 12px; }
+.split-copy p { margin: 0; color: var(--ink-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+  .split { height: auto; }
+  .split-stage { position: static; height: auto; padding: 60px 0; }
+  .split-half { display: none; }
+  .split-copy { opacity: 1; transform: none; }
+}
+
+/* =====================================================================
+   OPENING ANIMATION — a small kitchen at work: a knife chopping on a
+   board, and a pot coming to the boil beside it. All CSS, no images, so
+   it costs nothing to load and is sharp at any density.
+   ===================================================================== */
+.loader {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px;
+  background: radial-gradient(120% 90% at 50% 60%, #241608 0%, #0C0906 72%);
+  transition: opacity .6s ease, visibility .6s;
+}
+.loader.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
+
+.kitchen {
+  position: relative; width: 340px; height: 170px;
+  display: flex; align-items: flex-end; justify-content: center; gap: 34px;
+}
+
+/* ---------- chopping board + knife ---------- */
+.station { position: relative; width: 150px; height: 150px; }
+.board {
+  position: absolute; left: 0; bottom: 6px; width: 150px; height: 15px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #8A5A34, #5E3B21);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.16);
+}
+/* the pieces being cut, revealed one after another */
+.piece {
+  position: absolute; bottom: 21px; width: 15px; height: 9px; border-radius: 2px;
+  background: linear-gradient(180deg, #FFC46B, #E0873A);
+  opacity: 0; transform-origin: 50% 100%;
+}
+.piece:nth-of-type(1) { left: 16px; animation: chopped 4s ease-out infinite .55s; }
+.piece:nth-of-type(2) { left: 35px; animation: chopped 4s ease-out infinite 1.35s; }
+.piece:nth-of-type(3) { left: 54px; animation: chopped 4s ease-out infinite 2.15s; }
+@keyframes chopped {
+  0%, 6%   { opacity: 0; transform: translateY(-4px) scaleY(.5); }
+  14%      { opacity: 1; transform: translateY(0) scaleY(1); }
+  88%      { opacity: 1; }
+  100%     { opacity: 0; }
+}
+
+/* a proper chef's knife — big, as asked */
+.knife {
+  position: absolute; left: 26px; bottom: 34px;
+  width: 128px; height: 46px;
+  transform-origin: 96% 92%;                /* pivots at the handle end */
+  animation: chop 1.35s cubic-bezier(.4,0,.3,1) infinite;
+}
+.blade {
+  position: absolute; left: 0; top: 0; width: 96px; height: 40px;
+  background: linear-gradient(160deg, #F2F4F8 0%, #C3CAD6 45%, #9AA3B2 100%);
+  /* wide heel tapering to a tip, with a straight spine */
+  clip-path: polygon(0 0, 78% 0, 100% 62%, 96% 100%, 6% 100%, 0 62%);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.85);
+}
+.blade::after {                              /* bevel along the cutting edge */
+  content: ""; position: absolute; left: 5%; right: 3%; bottom: 0; height: 9px;
+  background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.05));
+  clip-path: polygon(0 0, 100% 0, 97% 100%, 2% 100%);
+}
+.bolster {
+  position: absolute; left: 92px; top: 3px; width: 10px; height: 32px;
+  border-radius: 2px; background: linear-gradient(180deg, #E4E8EE, #98A0AE);
+}
+.handle {
+  position: absolute; left: 100px; top: 7px; width: 32px; height: 22px;
+  border-radius: 3px 9px 9px 3px;
+  background: linear-gradient(180deg, #3A2A20, #1E1512);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.12);
+}
+@keyframes chop {
+  0%, 100% { transform: rotate(-34deg) translateY(-22px); }
+  36%      { transform: rotate(0deg)   translateY(0); }   /* blade meets board */
+  46%      { transform: rotate(-5deg)  translateY(-4px); }
+}
+
+/* ---------- pot coming to the boil ---------- */
+.stove { position: relative; width: 120px; height: 150px; }
+.pot {
+  position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+  width: 92px; height: 54px; border-radius: 6px 6px 16px 16px;
+  background: linear-gradient(180deg, #4A4450 0%, #221D28 70%);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.18);
+}
+.pot::before, .pot::after {                  /* side handles */
+  content: ""; position: absolute; top: 12px; width: 13px; height: 7px;
+  border-radius: 3px; background: #2C2633;
+}
+.pot::before { left: -12px; } .pot::after { right: -12px; }
+.pot-rim {
+  position: absolute; left: 50%; bottom: 70px; transform: translateX(-50%);
+  width: 104px; height: 9px; border-radius: 5px;
+  background: linear-gradient(180deg, #5A5364, #2E2836);
+}
+/* the boil itself */
+.broth {
+  position: absolute; left: 50%; bottom: 62px; transform: translateX(-50%);
+  width: 88px; height: 10px; border-radius: 50%;
+  background: radial-gradient(circle, #E8913C, #A85818);
+  animation: simmer 1.5s ease-in-out infinite;
+}
+@keyframes simmer { 0%,100% { transform: translateX(-50%) scaleY(1) } 50% { transform: translateX(-50%) scaleY(1.5) } }
+.bubble {
+  position: absolute; bottom: 60px; width: 9px; height: 9px; border-radius: 50%;
+  background: rgba(255, 214, 150, .95);
+  animation: boil 1.6s ease-in infinite;
+}
+.bubble:nth-of-type(1) { left: 34px; animation-delay: 0s; }
+.bubble:nth-of-type(2) { left: 52px; animation-delay: .38s; }
+.bubble:nth-of-type(3) { left: 68px; animation-delay: .72s; }
+.bubble:nth-of-type(4) { left: 44px; animation-delay: 1.05s; }
+@keyframes boil {
+  0%   { transform: translateY(0) scale(.3); opacity: 0; }
+  35%  { opacity: .95; }
+  100% { transform: translateY(-16px) scale(1.1); opacity: 0; }
+}
+/* steam */
+.steam {
+  position: absolute; bottom: 78px; width: 10px; height: 34px; border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255,236,214,.72), transparent);
+  filter: blur(2.5px); opacity: 0;
+  animation: rise 2.9s ease-out infinite;
+}
+.steam:nth-of-type(1) { left: 36px; animation-delay: .2s; }
+.steam:nth-of-type(2) { left: 53px; animation-delay: 1.0s; }
+.steam:nth-of-type(3) { left: 70px; animation-delay: 1.8s; }
+@keyframes rise {
+  0%   { transform: translateY(0) scaleX(1);   opacity: 0; }
+  25%  { opacity: .75; }
+  100% { transform: translateY(-46px) scaleX(1.9); opacity: 0; }
+}
+/* flame under the pot */
+.burner {
+  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+  width: 15px; height: 26px; border-radius: 50% 50% 46% 46%;
+  background: linear-gradient(180deg, #FFD27A, #FF9A3C 45%, #E65C00);
+  filter: blur(1px); transform-origin: 50% 100%;
+  animation: flick .6s ease-in-out infinite alternate;
+}
+.burner.b2 { margin-left: -19px; height: 19px; animation-delay: .15s; }
+.burner.b3 { margin-left:  17px; height: 22px; animation-delay: .3s; }
+@keyframes flick { from { transform: translateX(-50%) scaleY(.82); opacity: .85 }
+                   to   { transform: translateX(-50%) scaleY(1.16); opacity: 1 } }
+
+.loader-copy { text-align: center; }
+.loader-copy strong { display: block; font-family: var(--display); font-size: 26px; margin-bottom: 6px; }
+/* the line advances through the 5s so the wait reads as progress */
+.loader-bar { display: block; width: 190px; height: 2px; margin: 14px auto 0; background: rgba(255,255,255,.14); border-radius: 2px; overflow: hidden; }
+.loader-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--amber), #FFD27A); animation: fill var(--load-ms, 5000ms) linear forwards; }
+@keyframes fill { to { width: 100%; } }
+
+@media (max-width: 480px) { .kitchen { transform: scale(.82); } }
+@media (prefers-reduced-motion: reduce) {
+  .loader { display: none; }
+  .knife, .piece, .bubble, .steam, .burner, .broth, .loader-bar i { animation: none; }
+}
+
+/* =====================================================================
+   PAGE-WIDE HOVER — the lift the review cards had, applied to everything
+   interactive, driven by transform/opacity only so it stays off the
+   layout path.
+   ===================================================================== */
+.btn, .cat, .chip, .row-add, .icon-btn, .cart-btn, .veg-toggle,
+.craft-card, .quote, .score, .map-link, .theme,
+.nav-links a, .facts a, .foot a, .craft-meta a {
+  transition: transform .22s cubic-bezier(.22,.61,.36,1),
+              box-shadow .22s ease, background-color .22s ease,
+              border-color .22s ease, color .18s ease;
+}
+.craft-card:hover, .quote:hover, .score:hover, .map-link:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 32px 70px -34px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.3);
+}
+.cat:hover, .chip:hover, .theme:hover, .veg-toggle:hover { transform: translateY(-2px); }
+.nav-links a, .facts a, .foot a, .craft-meta a { position: relative; }
+/* underline grows from the left rather than fading — reads as deliberate */
+.nav-links a::after, .foot a::after, .craft-meta a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 1px;
+  background: var(--amber); transform: scaleX(0); transform-origin: left;
+  transition: transform .26s cubic-bezier(.22,.61,.36,1);
+}
+.nav-links a:hover::after, .foot a:hover::after, .craft-meta a:hover::after { transform: scaleX(1); }
+.nav-links a:hover, .foot a:hover, .craft-meta a:hover { color: var(--ink); }
+
+@media (hover: none) {
+  .craft-card:hover, .quote:hover, .score:hover, .map-link:hover { transform: none; }
+  /* a cut-out that lifts on tap-and-hold just looks like a mis-tap */
+  .dish:hover .dish-img, .pour:hover .pour-img { transform: none; }
+  .dish:hover .dish-shot::before { width: 74%; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn, .cat, .chip, .craft-card, .quote, .score, .map-link { transition: none; }
+  .craft-card:hover, .quote:hover, .score:hover, .map-link:hover { transform: none; }
+  .dish-img, .pour-img, .dish-shot::before { transition: none; }
+  .dish:hover .dish-img, .pour:hover .pour-img { transform: none; }
+}
+
+/* ---- the clip as the loading screen -------------------------------- */
+.loader-video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0; transition: opacity .7s ease;
+}
+.loader.has-video .loader-video { opacity: 1; }
+/* Once the film is playing the drawn kitchen is redundant — and two
+   competing chopping animations read as a mistake. */
+.loader.has-video .kitchen { opacity: 0; transition: opacity .4s ease; }
+.loader-scrim {
+  position: absolute; inset: 0; opacity: 0; transition: opacity .7s ease;
+  background:
+    linear-gradient(180deg, rgba(10,7,4,.62) 0%, rgba(10,7,4,.22) 42%, rgba(10,7,4,.88) 100%);
+}
+.loader.has-video .loader-scrim { opacity: 1; }
+.loader .kitchen, .loader-copy { position: relative; z-index: 2; }
+
+/* ===================================================== LIVE MENU STATE
+   Availability comes from the backend. "Sold out" is stated in words as
+   well as dimmed — colour and opacity alone would leave it invisible to a
+   screen reader, and to anyone who cannot pick the contrast difference. */
+.row.is-out .row-name,
+.row.is-out .row-price { opacity: .42; text-decoration: line-through; text-decoration-thickness: 1px; }
+.row.is-out .veg { opacity: .42; }
+.row-out {
+  font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-faint); white-space: nowrap; padding-right: 4px;
+}
+
+/* ------------------------------------------- reservation confirmation */
+.booked {
+  margin-top: 16px; padding: 22px 24px;
+  background: rgba(224,123,46,.10);
+  border: 1px solid rgba(224,123,46,.42);
+  border-radius: 18px;
+  display: grid; gap: 6px; justify-items: start;
+}
+.booked-lbl { font-size: 9.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+.booked-code {
+  font-family: var(--display); font-size: clamp(30px, 5vw, 42px); font-weight: 400;
+  line-height: 1; letter-spacing: .02em; color: var(--ink);
+}
+.booked p { margin: 2px 0 0; font-size: 13.5px; color: var(--ink-soft); }
+.booked .booked-note { font-size: 12.5px; color: var(--ink-faint); max-width: 44ch; }
+.booked .btn { margin-top: 10px; }
+
+/* the phone an order is called back on — only present when the API is live */
+.order-phone { margin-bottom: 12px; }
+.order-phone label { display: block; margin-bottom: 7px; }
+.order-phone input {
+  width: 100%; font: inherit; font-size: 15px; color: var(--ink);
+  padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07);
+}

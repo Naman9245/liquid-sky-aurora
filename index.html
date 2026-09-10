@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Liquid Sky — Rooftop Lounge, Yelahanka</title>
+<meta name="description" content="Family fine dine and rooftop bar on Airport Road, Bettahalsoor. Tandoor, coastal and North Indian, open daily until 12:30 AM." />
+<meta name="theme-color" content="#0C0906" />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+
+<!-- =====================================================================
+     OWNER — READ THIS BEFORE GOING LIVE
+     https://liquidsky.example is a PLACEHOLDER domain. Every absolute URL
+     below (canonical, og:url, og:image, twitter:image, and the URLs inside
+     the JSON-LD block) uses it. Replace it with your real domain
+     EVERYWHERE it appears here, and also in:
+         robots.txt   (the Sitemap: line)
+         sitemap.xml  (the <loc> element)
+         site.webmanifest
+     Until you do, link previews and Google's structured data will point at
+     a domain that does not resolve.
+     ===================================================================== -->
+<link rel="canonical" href="https://liquidsky.example/" />
+
+<!-- Where the browser sends chat messages. This is an ENDPOINT, not a
+     credential — the Gemini key lives only in that server's environment.
+     Never put GEMINI_API_KEY in this file: it is a static page and its
+     source is public to every visitor. Blank = local engine only.
+
+     OWNER: this was pointing at http://localhost:8787/chat, which only
+     ever worked on the developer's own machine — for every real visitor
+     that request failed. It is now blank, so the chat runs entirely in the
+     browser on the built-in local engine. When you deploy the chat server,
+     put its public HTTPS URL here (e.g. https://api.yourdomain.com/chat)
+     and the front desk will start answering through it again. -->
+<meta name="chat-api" content="" />
+
+<!-- ============================ SOCIAL ============================
+     Most traffic to this page arrives as a link pasted into WhatsApp.
+     These tags are what decide whether that link renders as a photo card
+     or as a bare grey URL. photos/og.jpg is 1200x630, built from
+     photos/room-wide.jpg. og:image MUST stay an absolute URL —
+     WhatsApp, Facebook and X do not resolve relative paths. -->
+<meta property="og:type" content="restaurant.restaurant" />
+<meta property="og:site_name" content="Liquid Sky" />
+<meta property="og:locale" content="en_IN" />
+<meta property="og:title" content="Liquid Sky — Family Fine Dine &amp; Bar, Yelahanka" />
+<meta property="og:description" content="North Indian, coastal, Chinese and tandoor plates with a full bar in Yelahanka, Bengaluru. Open daily till 12:30 AM · 4.7★ from 140 reviews · ₹400–₹1,400 for two." />
+<meta property="og:url" content="https://liquidsky.example/" />
+<meta property="og:image" content="https://liquidsky.example/photos/og.jpg" />
+<meta property="og:image:secure_url" content="https://liquidsky.example/photos/og.jpg" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="A plated main course under warm light at Liquid Sky, with the name set on the dark table beside it" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Liquid Sky — Family Fine Dine &amp; Bar, Yelahanka" />
+<meta name="twitter:description" content="North Indian, coastal, Chinese and tandoor plates with a full bar in Yelahanka, Bengaluru. Open daily till 12:30 AM · 4.7★ from 140 reviews." />
+<meta name="twitter:image" content="https://liquidsky.example/photos/og.jpg" />
+<meta name="twitter:image:alt" content="A plated main course under warm light at Liquid Sky, with the name set on the dark table beside it" />
+
+<link rel="icon" href="/icon-192.png" sizes="192x192" type="image/png" />
+<link rel="apple-touch-icon" href="/icon-192.png" />
+<link rel="manifest" href="/site.webmanifest" />
+
+<!-- ======================= STRUCTURED DATA =======================
+     Feeds the Google rich result for the restaurant: rating stars,
+     hours, price band, phone and directions.
+     NOTE: the closing time (12:30 AM) is confirmed. The OPENING time of
+     12:00 noon is an ASSUMPTION — nothing on this page or in the source
+     material states it. Confirm the real opening hour with the owner and
+     correct "opens" below if it is wrong. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "@id": "https://liquidsky.example/#restaurant",
+  "name": "Liquid Sky",
+  "legalName": "Liquid Sky Family Fine Dine and Bar",
+  "url": "https://liquidsky.example/",
+  "image": [
+    "https://liquidsky.example/photos/og.jpg",
+    "https://liquidsky.example/photos/room-wide.jpg"
+  ],
+  "telephone": "+918792742988",
+  "priceRange": "₹₹",
+  "currenciesAccepted": "INR",
+  "servesCuisine": ["North Indian", "Coastal", "Chinese", "Tandoor", "Bar"],
+  "acceptsReservations": true,
+  "hasMenu": "https://liquidsky.example/#menu",
+  "hasMap": "https://www.google.com/maps/search/?api=1&query=5J6G%2BMH%20Bettahalsoor%20Karnataka",
+  "sameAs": [
+    "https://www.swiggy.com/city/bangalore/liquid-sky-devanahalli-rest1333026"
+  ],
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "No. 842/2, Balaji Complex, 2nd Floor, Vidya Nagar Cross Road, Jala Hobli, Yelahanka, Bettahalsoor",
+    "addressLocality": "Bengaluru",
+    "addressRegion": "Karnataka",
+    "postalCode": "562157",
+    "addressCountry": "IN"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 13.1616,
+    "longitude": 77.6264
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.7",
+    "reviewCount": "140",
+    "bestRating": "5",
+    "worstRating": "1"
+  },
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday"
+      ],
+      "opens": "12:00",
+      "closes": "00:30"
+    }
+  ]
+}
+</script>
+
+<!-- ============================= FONTS =============================
+     Trimmed from 7 font files to 5. Weights kept are the ones the CSS can
+     actually reach:
+       Instrument Serif  ital@0;1  — roman + italic; app.css uses
+                                     `h1 em, h2 em { font-style: italic }`
+       Manrope           400       — body default (app.css declares no
+                                     other weight)
+       Manrope           600       — the closest face to the browser's
+                                     bold=700 request for the <strong> in
+                                     the cart lines; without it that text
+                                     gets an ugly synthesised bold
+       IBM Plex Mono     400       — every .mono rule; nothing requests 500
+     Dropped: Manrope 500 and IBM Plex Mono 500, which no rule and no
+     element could ever select. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet" />
+<!-- Assets carry a content hash in ?v= so a changed file is re-fetched
+     immediately and an unchanged one stays cached. Regenerate with
+     ./bump-assets.sh after editing any CSS or JS. -->
+<link rel="stylesheet" href="assets/app.css?v=6023ef95" />
+
+<!-- The skip link lives here rather than in app.css because app.css is
+     owned elsewhere. It is the first focusable thing on a page with 105
+     focusable elements, so a keyboard or screen-reader user can jump
+     straight to the menu instead of tabbing the whole nav every time.
+     Off-screen via transform (not display:none, which would make it
+     unfocusable) until it takes focus. -->
+<style>
+  .skip-link {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 9999;
+    transform: translateY(calc(-100% - 24px));
+    display: inline-block;
+    padding: 12px 20px;
+    border-radius: 10px;
+    background: #E07B2E;
+    color: #17120F;
+    font: 600 13px/1 ui-sans-serif, -apple-system, "Segoe UI", system-ui, sans-serif;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .55);
+    transition: transform .16s ease;
+  }
+  .skip-link:focus {
+    transform: none;
+    outline: 3px solid #F5EEE4;
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skip-link { transition: none; }
+  }
+</style>
+</head>
+
+<body>
+  <a class="skip-link" href="#menu">Skip to menu</a>
+
+  <!-- Opening animation. Marked aria-hidden and removed from the flow once
+       done, so it never traps a screen reader or the keyboard. -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <!-- The clip is the loader. The CSS kitchen below stays as the instant
+         fallback: it paints immediately while the video is still buffering,
+         and remains if the file fails or the browser blocks autoplay. -->
+    <video class="loader-video" id="loader-video"
+           src="assets/video/restruent_vibe.mp4" muted playsinline autoplay loop preload="auto"></video>
+    <div class="loader-scrim" aria-hidden="true"></div>
+
+    <div class="kitchen" id="loader-fallback">
+      <div class="station">
+        <span class="piece"></span><span class="piece"></span><span class="piece"></span>
+        <span class="board"></span>
+        <span class="knife">
+          <span class="blade"></span><span class="bolster"></span><span class="handle"></span>
+        </span>
+      </div>
+      <div class="stove">
+        <span class="burner b2"></span><span class="burner"></span><span class="burner b3"></span>
+        <span class="pot"></span>
+        <span class="broth"></span>
+        <span class="bubble"></span><span class="bubble"></span>
+        <span class="bubble"></span><span class="bubble"></span>
+        <span class="pot-rim"></span>
+        <span class="steam"></span><span class="steam"></span><span class="steam"></span>
+      </div>
+    </div>
+
+    <div class="loader-copy">
+      <strong>Cooking your table</strong>
+      <span class="mono">Firing the tandoor &middot; one moment</span>
+      <span class="loader-bar"><i></i></span>
+    </div>
+  </div>
+
+  <!-- live sky: WebGL when available, a static dusk gradient when not -->
+  <div id="sky-fallback"></div>
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <div id="sky-veil" aria-hidden="true"></div>
+
+  <!-- role="main" rather than a real <main> element so the DOM is not
+       restructured: .page is the only wrapper that holds all the page
+       content (the loader, sky canvas, cart drawer, chat panel and toast
+       are all siblings outside it), so it is the correct landmark host.
+       Caveat for whoever owns the markup: the nav and footer sit inside
+       .page, so they are nested in this landmark and the footer no longer
+       exposes a top-level `contentinfo` role. Moving them out to be
+       siblings of .page would be the clean fix, but that is a DOM
+       restructure and out of scope here. -->
+  <div class="page" role="main">
+
+    <!-- ============================ NAV ============================ -->
+    <div class="shell nav">
+      <div class="nav-in glass">
+        <div class="brand">Liquid<span>·</span>Sky</div>
+        <nav class="nav-links">
+          <a href="#plates">Plates</a>
+          <a href="#bar">Bar</a>
+          <a href="#menu">Menu</a>
+          <a href="#craft">Craft</a>
+          <a href="#reviews">Reviews</a>
+          <a href="#visit">Find us</a>
+          <a href="#reserve">Reserve</a>
+        </nav>
+        <div class="nav-right">
+          <span class="status" id="status" title="Live opening status">
+            <i></i><span id="status-txt" class="status-txt">Checking…</span>
+          </span>
+          <button class="cart-btn" id="cart-open" aria-label="Open your order">
+            &#128722;<span class="cart-badge" id="cart-badge" hidden>0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================ HERO ============================ -->
+    <header class="shell hero">
+      <span class="eyebrow reveal">Bettahalsoor &middot; Yelahanka &middot; Bengaluru</span>
+      <h1 class="reveal" style="--delay:90ms">Liquid <em>Sky</em></h1>
+      <p class="hero-lede reveal" style="--delay:180ms">
+        A family fine dine and rooftop bar twelve minutes off the airport road.
+        One tandoor, a coastal kitchen and a full bar — open every night until half past midnight.
+      </p>
+      <div class="hero-actions reveal" style="--delay:250ms">
+        <a class="btn btn--solid" id="hero-reserve" href="#reserve">Reserve a table</a>
+        <a class="btn" href="#menu">See the menu</a>
+      </div>
+      <div class="hero-meta reveal" style="--delay:320ms">
+        <div><b>4.7</b><span class="mono">Google rating</span></div>
+        <div><b>140</b><span class="mono">Reviews</span></div>
+        <div><b>287</b><span class="mono">Dishes &amp; drinks</span></div>
+        <div><b>12:30</b><span class="mono">AM &middot; closes daily</span></div>
+      </div>
+      <span class="scroll-cue reveal" style="--delay:420ms">Scroll</span>
+    </header>
+
+
+    <!-- ============ SCROLL SPLIT: the sky opens ============ -->
+    <section class="split" id="split" aria-labelledby="split-title">
+      <div class="split-stage">
+        <div class="split-half is-top" aria-hidden="true"></div>
+        <div class="split-half is-bot" aria-hidden="true"></div>
+        <span class="split-seam" aria-hidden="true"></span>
+        <div class="split-copy">
+          <h2 id="split-title">Twelve floors of <em>open sky</em></h2>
+          <p class="mono">Keep scrolling — the roof comes off.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ STATEMENT ============================ -->
+    <section class="shell band statement-band">
+      <p class="statement reveal">
+        The sky above this page is Bengaluru's, right now.
+        <span class="dim">When it turns amber, we're pouring.</span>
+      </p>
+    </section>
+
+    <!-- ===================== ROOM: full-bleed still =====================
+         The photograph was composed with the subject hard right and an
+         empty stretch of dark table on the left, so the copy goes in that
+         empty half rather than on top of the food. Below 820px there is no
+         empty half left to use, so the scrim turns vertical and the copy
+         drops to the bottom of the frame. -->
+    <section class="filmstrip" id="room" aria-labelledby="room-title">
+      <img class="filmstrip-img" loading="lazy" decoding="async"
+           src="photos/room-wide.jpg"
+           srcset="photos/room-wide-sm.jpg 900w, photos/room-wide.jpg 1800w"
+           sizes="100vw" width="1800" height="1005"
+           alt="A plated main course under warm light, with the dining room lit low behind it" />
+      <div class="filmstrip-scrim" aria-hidden="true"></div>
+      <div class="shell filmstrip-copy">
+        <span class="eyebrow reveal">Inside</span>
+        <h2 id="room-title" class="reveal" style="--delay:80ms">The room stays full<br /><em>past eleven</em></h2>
+        <p class="reveal" style="--delay:160ms">
+          Low light, a full bar, and a kitchen that does not wind down early.
+          The last order goes in at half past midnight.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============================ PLATES ============================ -->
+    <section class="shell band" id="plates">
+      <div class="band-head">
+        <div>
+          <span class="eyebrow reveal">What people order</span>
+          <h2 class="reveal" style="--delay:80ms">Signature <em>plates</em></h2>
+        </div>
+        <span class="mono reveal" style="--delay:140ms">Eight of two hundred and eighty-seven</span>
+      </div>
+      <div class="plates" id="plates-grid"></div>
+    </section>
+
+    <!-- ============================== BAR ==============================
+         Asked for as its own section rather than a shelf inside the menu.
+         The glasses are cut-outs, so they stand on a drawn counter line
+         with a clipped, masked reflection under each one. -->
+    <section class="shell band" id="bar">
+      <div class="band-head">
+        <div>
+          <span class="eyebrow reveal">The bar</span>
+          <h2 class="reveal" style="--delay:80ms">Poured until <em>half past midnight</em></h2>
+        </div>
+        <span class="mono reveal" style="--delay:140ms">10 cocktails &middot; 8 mocktails &middot; 44 bottles</span>
+      </div>
+      <div class="bar-rail" id="bar-rail"></div>
+    </section>
+
+    <!-- ============================ MENU ============================ -->
+    <section class="shell band" id="menu">
+      <div class="band-head">
+        <div>
+          <span class="eyebrow reveal">Everything we serve</span>
+          <h2 class="reveal" style="--delay:80ms">The full <em>menu</em></h2>
+        </div>
+        <span class="mono reveal" style="--delay:140ms"><span id="menu-count">287</span> items &middot; tap + to add</span>
+      </div>
+
+      <div class="menu-bar reveal">
+        <div class="menu-search">
+          <label class="sr-only" for="q">Search the menu</label>
+          <input id="q" type="search" placeholder="Search dishes, drinks…" autocomplete="off" />
+        </div>
+        <!-- Veg / non-veg switch. Choosing a side rolls a short clip from
+             the kitchen over the list while it swaps underneath: the pan of
+             vegetables for veg, the grill for non-veg. -->
+        <div class="diet" id="diet" role="group" aria-label="Filter the menu by vegetarian or non-vegetarian">
+          <button class="diet-opt" type="button" data-diet="all" aria-pressed="true">All</button>
+          <button class="diet-opt" type="button" data-diet="veg" aria-pressed="false">
+            <span class="veg" aria-hidden="true"></span>Veg</button>
+          <button class="diet-opt" type="button" data-diet="nonveg" aria-pressed="false">
+            <span class="veg is-non" aria-hidden="true"></span>Non-veg</button>
+        </div>
+      </div>
+
+      <div class="cats" id="cats" role="tablist" aria-label="Menu categories"></div>
+      <div class="glass menu-panel" id="menu-panel"><div class="menu-list" id="menu-list"></div>
+        <p class="menu-empty mono" id="menu-empty" hidden>Nothing matches that. Try “biryani”, “kebab” or “mojito”.</p>
+        <!-- Two elements rather than one with a swapped src, so each clip
+             keeps its own buffer instead of re-fetching on every switch.
+             Both stay at preload="none" until the menu is actually on
+             screen — together they are 2.9MB. -->
+        <div class="switch-film" id="switch-film" data-on="false" aria-hidden="true">
+          <video class="switch-video" data-diet="veg" muted playsinline preload="none"
+                 src="assets/video/pan_stairing.mp4"></video>
+          <video class="switch-video" data-diet="nonveg" muted playsinline preload="none"
+                 src="assets/video/chicken_flip.mp4"></video>
+          <span class="switch-label mono" id="switch-label"></span>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============================ CRAFT ============================ -->
+    <section class="shell band" id="craft">
+      <div class="band-head">
+        <div>
+          <span class="eyebrow reveal">Three kitchens, one roof</span>
+          <h2 class="reveal" style="--delay:80ms">How it's <em>made</em></h2>
+        </div>
+        <span class="mono reveal" style="--delay:140ms">Tandoor &middot; Coastal &middot; Bar</span>
+      </div>
+      <div class="craft">
+        <article class="craft-card glass reveal">
+          <figure><img loading="lazy" src="photos/tandoorPlatter.jpg" alt="Charred pieces resting in a tandoor dish" /></figure>
+          <div class="craft-body">
+            <span class="craft-num">01 &mdash; The tandoor</span>
+            <h3>Charcoal, not gas</h3>
+            <p>Kababs and breads go into a live charcoal tandoor. It is slower and messier than a gas oven, and it is the reason the edges taste the way they do.</p>
+            <div class="craft-meta mono"><span>26 dishes</span><a href="#menu">See them &#8599;</a></div>
+          </div>
+        </article>
+
+        <article class="craft-card glass reveal" style="--delay:110ms">
+          <figure><img loading="lazy" src="photos/gheeRoast.jpg" alt="A dark, rich ghee roast topped with coriander" /></figure>
+          <div class="craft-body">
+            <span class="craft-num">02 &mdash; The coastal kitchen</span>
+            <h3>Mangalore, on Airport Road</h3>
+            <p>Ghee roast, Guntur heat, and the coastal plates guests keep naming in reviews. Cooked to order, which is why they take a little longer.</p>
+            <div class="craft-meta mono"><span>60 dishes</span><a href="#menu">See them &#8599;</a></div>
+          </div>
+        </article>
+
+        <article class="craft-card glass reveal" style="--delay:220ms">
+          <figure><img loading="lazy" src="photos/barCounter.jpg" alt="A cocktail finished on the bar counter" /></figure>
+          <div class="craft-body">
+            <span class="craft-num">03 &mdash; The bar</span>
+            <h3>Open till half past midnight</h3>
+            <p>Cocktails, mocktails and a full spirits list, poured until close. The last kitchen still lit on this stretch of the airport road.</p>
+            <div class="craft-meta mono"><span>62 pours</span><a href="#menu">See them &#8599;</a></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ============================ REVIEWS ============================ -->
+    <section class="shell band" id="reviews">
+      <div class="band-head">
+        <div>
+          <span class="eyebrow reveal">In their words</span>
+          <h2 class="reveal" style="--delay:80ms">What guests <em>say</em></h2>
+        </div>
+        <a class="mono reveal" style="--delay:140ms" href="https://www.google.com/maps/search/?api=1&amp;query=5J6G%2BMH%20Bettahalsoor%20Karnataka" target="_blank" rel="noopener noreferrer">Read on Google &#8599;</a>
+      </div>
+      <div class="reviews">
+        <div class="score glass reveal">
+          <b>4.7<span>/5</span></b>
+          <div class="stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="mono">Across 140 Google reviews</p>
+          <div class="themes">
+            <span class="theme">Polite staff &middot; 13</span>
+            <span class="theme">Chicken ghee roast &middot; 2</span>
+            <span class="theme">Reasonable pricing &middot; 2</span>
+          </div>
+        </div>
+        <div class="quotes" id="quotes"></div>
+      </div>
+    </section>
+
+    <!-- ============================ VISIT ============================ -->
+    <section class="shell band" id="visit">
+      <div class="band-head">
+        <div>
+          <span class="eyebrow reveal">Getting here</span>
+          <h2 class="reveal" style="--delay:80ms">Find <em>us</em></h2>
+        </div>
+        <span class="mono reveal" style="--delay:140ms">Plus code 5J6G+MH</span>
+      </div>
+      <div class="visit">
+        <a class="map-link reveal" href="https://www.google.com/maps/search/?api=1&amp;query=5J6G%2BMH%20Bettahalsoor%20Karnataka" target="_blank" rel="noopener noreferrer" aria-label="Open Liquid Sky in Google Maps">
+          <img src="assets/map.jpg" alt="Map of Vidyanagar Cross on New Airport Road with Liquid Sky marked" />
+          <span class="btn map-badge">Open in Google Maps &#8599;</span>
+        </a>
+        <div class="visit-card glass reveal" style="--delay:90ms">
+          <div class="flyover">
+            <strong>Don't let the flyover fool you</strong>
+            <p>Guests tell us they nearly drove past. Coming from the airport, stay on the service road — don't take the flyover at Vidyanagar Cross. We're on the 2nd floor of Balaji Complex, above the shops.</p>
+          </div>
+          <dl class="facts mono">
+            <div><dt>Address</dt><dd>No. 842/2, Balaji Complex, 2nd Floor<br />Vidya Nagar Cross Road, Jala Hobli<br />Yelahanka, Bettahalsoor &middot; 562157</dd></div>
+            <div><dt>Hours</dt><dd>Open daily &middot; closes 12:30&nbsp;AM</dd></div>
+            <div><dt>Phone</dt><dd><a href="tel:+918792742988">087927 42988</a></dd></div>
+            <div><dt>Spend</dt><dd>₹400 – ₹1,400 for two</dd></div>
+            <div><dt>Service</dt><dd>Dine-in &middot; Drive-through &middot; No-contact delivery</dd></div>
+          </dl>
+          <div class="hero-actions">
+            <a class="btn btn--solid" href="https://www.google.com/maps/dir/?api=1&amp;destination=13.1616%2C77.6264" target="_blank" rel="noopener noreferrer">Get directions</a>
+            <a class="btn" href="tel:+918792742988">Call us</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ RESERVE ============================ -->
+    <section class="shell band" id="reserve">
+      <div class="band-head">
+        <div>
+          <span class="eyebrow reveal">Two taps</span>
+          <h2 class="reveal" style="--delay:80ms">Save me a <em>table</em></h2>
+        </div>
+        <span class="mono reveal" style="--delay:140ms">Confirmed on WhatsApp</span>
+      </div>
+      <div class="reserve">
+        <form class="form-card glass reveal" id="rform">
+          <div class="two">
+            <div class="field"><label class="mono" for="r-date">Date</label><input id="r-date" type="date" /></div>
+            <div class="field"><label class="mono" for="r-time">Time</label>
+              <select id="r-time"><option>7:00 PM</option><option selected>8:30 PM</option><option>10:00 PM</option><option>11:30 PM</option></select></div>
+          </div>
+          <div class="two">
+            <div class="field"><label class="mono" for="r-guests">Guests</label>
+              <select id="r-guests"><option>2 guests</option><option selected>4 guests</option><option>6 guests</option><option>8+ guests</option></select></div>
+            <div class="field"><label class="mono" for="r-phone">Phone</label><input id="r-phone" type="tel" placeholder="+91 98000 00000" /></div>
+          </div>
+          <div class="field"><label class="mono" for="r-name">Name</label><input id="r-name" type="text" placeholder="Who is the table under?" /></div>
+          <button class="btn btn--solid" type="submit" style="width:100%;justify-content:center">Send on WhatsApp</button>
+          <p class="mono" style="text-align:center;margin:14px 0 0">No card needed &middot; free cancellation</p>
+        </form>
+        <figure class="reserve-figure reveal" style="--delay:90ms">
+          <img src="photos/rooftopDusk.jpg" alt="The open-air terrace at dusk under string lights" />
+        </figure>
+      </div>
+    </section>
+
+    <footer class="shell foot mono">
+      <span>Liquid Sky Family Fine Dine &amp; Bar</span>
+      <span>Yelahanka, Bengaluru 562157</span>
+      <a href="https://www.swiggy.com/city/bangalore/liquid-sky-devanahalli-rest1333026" target="_blank" rel="noopener noreferrer">Order on Swiggy &#8599;</a>
+      <a href="https://wa.me/918792742988" target="_blank" rel="noopener noreferrer">WhatsApp &#8599;</a>
+    </footer>
+  </div>
+
+  <!-- ============================ CART ============================ -->
+  <div class="scrim" id="scrim" hidden></div>
+  <aside class="drawer" id="cart" data-open="false" aria-label="Your order">
+    <div class="drawer-head">
+      <h3>Your order</h3>
+      <button class="icon-btn" id="cart-close" aria-label="Close">&times;</button>
+    </div>
+    <div class="drawer-body" id="cart-body"></div>
+    <div class="drawer-foot">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span class="mono">Total</span><strong id="cart-total" style="font-family:var(--display);font-size:26px">₹0</strong>
+      </div>
+      <button class="btn btn--solid" id="cart-send" style="justify-content:center">Send order on WhatsApp</button>
+      <a class="btn" style="justify-content:center" href="https://www.swiggy.com/city/bangalore/liquid-sky-devanahalli-rest1333026" target="_blank" rel="noopener noreferrer">Order on Swiggy instead</a>
+    </div>
+  </aside>
+
+  <!-- ============================ CHAT ============================ -->
+  <button class="fab" id="chat-open" aria-label="Ask the front desk">&#128172;</button>
+  <section class="chat glass" id="chat" aria-label="Front desk" hidden>
+    <div class="drawer-head">
+      <div><h3>Front desk</h3><p class="mono" style="margin:2px 0 0">Usually replies instantly</p></div>
+      <button class="icon-btn" id="chat-close" aria-label="Close chat">&times;</button>
+    </div>
+    <div class="chat-log" id="chat-log" role="log" aria-live="polite"></div>
+    <div class="chips" id="chips"></div>
+    <form class="chat-form" id="chat-form">
+      <label class="sr-only" for="chat-in">Message the front desk</label>
+      <input id="chat-in" type="text" placeholder="Timings, menu, table…" autocomplete="off" />
+      <button class="icon-btn" type="submit" aria-label="Send">&uarr;</button>
+    </form>
+  </section>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="menu-data.js?v=170061c3"></script>
+  <script src="assets/sky.js?v=06aa1304"></script>
+  <script src="assets/app.js?v=7449b6ec"></script>
+</body>
+</html>

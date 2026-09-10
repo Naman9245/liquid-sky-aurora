@@ -1,0 +1,11 @@
+# Liquid Sky Family Fine Dine and Bar — robots.txt
+# Everything on this site is public. Nothing is disallowed.
+#
+# OWNER: liquidsky.example is a PLACEHOLDER. Replace it with your real
+# domain in the Sitemap line below (and in index.html, sitemap.xml and
+# site.webmanifest) before going live.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://liquidsky.example/sitemap.xml

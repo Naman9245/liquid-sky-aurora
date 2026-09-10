@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Liquid Sky sitemap.
+
+  This is a single-page site: #menu, #reserve and #visit are in-page
+  anchors on this same document, not separate URLs, so they are NOT
+  listed here. Listing them would hand Google duplicate URLs that all
+  serve identical HTML.
+
+  OWNER: liquidsky.example is a PLACEHOLDER. Replace it with your real
+  domain here, in robots.txt, in index.html and in site.webmanifest
+  before going live. Bump <lastmod> whenever the page content changes.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://liquidsky.example/</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
