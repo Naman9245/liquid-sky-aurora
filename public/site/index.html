@@ -152,7 +152,7 @@
 <!-- Assets carry a content hash in ?v= so a changed file is re-fetched
      immediately and an unchanged one stays cached. Regenerate with
      ./bump-assets.sh after editing any CSS or JS. -->
-<link rel="stylesheet" href="assets/app.css?v=6023ef95" />
+<link rel="stylesheet" href="/site/assets/app.css?v=6023ef95" />
 
 <!-- The skip link lives here rather than in app.css because app.css is
      owned elsewhere. It is the first focusable thing on a page with 105
@@ -200,7 +200,7 @@
          fallback: it paints immediately while the video is still buffering,
          and remains if the file fails or the browser blocks autoplay. -->
     <video class="loader-video" id="loader-video"
-           src="assets/video/restruent_vibe.mp4" muted playsinline autoplay loop preload="auto"></video>
+           src="/site/assets/video/restruent_vibe.mp4" muted playsinline autoplay loop preload="auto"></video>
     <div class="loader-scrim" aria-hidden="true"></div>
 
     <div class="kitchen" id="loader-fallback">
@@ -320,8 +320,8 @@
          drops to the bottom of the frame. -->
     <section class="filmstrip" id="room" aria-labelledby="room-title">
       <img class="filmstrip-img" loading="lazy" decoding="async"
-           src="photos/room-wide.jpg"
-           srcset="photos/room-wide-sm.jpg 900w, photos/room-wide.jpg 1800w"
+           src="/site/photos/room-wide.jpg"
+           srcset="/site/photos/room-wide-sm.jpg 900w, /site/photos/room-wide.jpg 1800w"
            sizes="100vw" width="1800" height="1005"
            alt="A plated main course under warm light, with the dining room lit low behind it" />
       <div class="filmstrip-scrim" aria-hidden="true"></div>
@@ -398,9 +398,9 @@
              screen — together they are 2.9MB. -->
         <div class="switch-film" id="switch-film" data-on="false" aria-hidden="true">
           <video class="switch-video" data-diet="veg" muted playsinline preload="none"
-                 src="assets/video/pan_stairing.mp4"></video>
+                 src="/site/assets/video/pan_stairing.mp4"></video>
           <video class="switch-video" data-diet="nonveg" muted playsinline preload="none"
-                 src="assets/video/chicken_flip.mp4"></video>
+                 src="/site/assets/video/chicken_flip.mp4"></video>
           <span class="switch-label mono" id="switch-label"></span>
         </div>
       </div>
@@ -418,7 +418,7 @@
       </div>
       <div class="craft">
         <article class="craft-card glass reveal">
-          <figure><img loading="lazy" src="photos/tandoorPlatter.jpg" alt="Charred pieces resting in a tandoor dish" /></figure>
+          <figure><img loading="lazy" src="/site/photos/tandoorPlatter.jpg" alt="Charred pieces resting in a tandoor dish" /></figure>
           <div class="craft-body">
             <span class="craft-num">01 &mdash; The tandoor</span>
             <h3>Charcoal, not gas</h3>
@@ -428,7 +428,7 @@
         </article>
 
         <article class="craft-card glass reveal" style="--delay:110ms">
-          <figure><img loading="lazy" src="photos/gheeRoast.jpg" alt="A dark, rich ghee roast topped with coriander" /></figure>
+          <figure><img loading="lazy" src="/site/photos/gheeRoast.jpg" alt="A dark, rich ghee roast topped with coriander" /></figure>
           <div class="craft-body">
             <span class="craft-num">02 &mdash; The coastal kitchen</span>
             <h3>Mangalore, on Airport Road</h3>
@@ -438,7 +438,7 @@
         </article>
 
         <article class="craft-card glass reveal" style="--delay:220ms">
-          <figure><img loading="lazy" src="photos/barCounter.jpg" alt="A cocktail finished on the bar counter" /></figure>
+          <figure><img loading="lazy" src="/site/photos/barCounter.jpg" alt="A cocktail finished on the bar counter" /></figure>
           <div class="craft-body">
             <span class="craft-num">03 &mdash; The bar</span>
             <h3>Open till half past midnight</h3>
@@ -484,7 +484,7 @@
       </div>
       <div class="visit">
         <a class="map-link reveal" href="https://www.google.com/maps/search/?api=1&amp;query=5J6G%2BMH%20Bettahalsoor%20Karnataka" target="_blank" rel="noopener noreferrer" aria-label="Open Liquid Sky in Google Maps">
-          <img src="assets/map.jpg" alt="Map of Vidyanagar Cross on New Airport Road with Liquid Sky marked" />
+          <img src="/site/assets/map.jpg" alt="Map of Vidyanagar Cross on New Airport Road with Liquid Sky marked" />
           <span class="btn map-badge">Open in Google Maps &#8599;</span>
         </a>
         <div class="visit-card glass reveal" style="--delay:90ms">
@@ -533,7 +533,7 @@
           <p class="mono" style="text-align:center;margin:14px 0 0">No card needed &middot; free cancellation</p>
         </form>
         <figure class="reserve-figure reveal" style="--delay:90ms">
-          <img src="photos/rooftopDusk.jpg" alt="The open-air terrace at dusk under string lights" />
+          <img src="/site/photos/rooftopDusk.jpg" alt="The open-air terrace at dusk under string lights" />
         </figure>
       </div>
     </section>
@@ -581,8 +581,8 @@
 
   <div class="toast" id="toast" role="status"></div>
 
-  <script src="menu-data.js?v=170061c3"></script>
-  <script src="assets/sky.js?v=06aa1304"></script>
-  <script src="assets/app.js?v=7449b6ec"></script>
+  <script src="/site/menu-data.js?v=170061c3"></script>
+  <script src="/site/assets/sky.js?v=06aa1304"></script>
+  <script src="/site/assets/app.js?v=005bc331"></script>
 </body>
 </html>

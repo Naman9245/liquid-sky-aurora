@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#12150f">
+<title>Liquid Sky — Staff sign in</title>
+<link rel="stylesheet" href="/login/style.css">
+</head>
+<body>
+<main class="pad">
+  <header class="head">
+    <h1>Liquid Sky</h1>
+    <p>Staff sign in</p>
+  </header>
+
+  <div class="dots" id="dots" aria-live="polite" aria-label="PIN entry"></div>
+  <p class="err" id="err" hidden></p>
+
+  <div class="keys">
+    <button type="button" data-k="1">1</button>
+    <button type="button" data-k="2">2</button>
+    <button type="button" data-k="3">3</button>
+    <button type="button" data-k="4">4</button>
+    <button type="button" data-k="5">5</button>
+    <button type="button" data-k="6">6</button>
+    <button type="button" data-k="7">7</button>
+    <button type="button" data-k="8">8</button>
+    <button type="button" data-k="9">9</button>
+    <button type="button" class="sub" id="clear">Clear</button>
+    <button type="button" data-k="0">0</button>
+    <button type="button" class="go" id="go" aria-label="Sign in">→</button>
+  </div>
+
+  <p class="hint">Ask the manager if you do not have a PIN.</p>
+</main>
+<script src="/login/app.js"></script>
+</body>
+</html>

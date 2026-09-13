@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e120c">
+<title>Liquid Sky — Kitchen</title>
+<link rel="stylesheet" href="/kitchen/style.css">
+</head>
+<body>
+
+<header class="bar">
+  <div class="bar-left">
+    <h1>KITCHEN</h1>
+    <span class="station-name" id="stationName">Expo · all stations</span>
+  </div>
+  <nav class="stationnav" id="stationNav" aria-label="Kitchen screens"></nav>
+  <div class="bar-right">
+    <span class="counter"><b id="activeCount">0</b> active</span>
+    <button class="soundbtn" id="soundBtn" type="button" aria-pressed="false">
+      <span id="soundIcon">🔕</span> <span id="soundLabel">Sound off</span>
+    </button>
+    <span class="whoami" id="whoami"></span>
+    <button class="soundbtn" id="signout" type="button">Sign out</button>
+    <span class="clock" id="clock">--:--</span>
+    <span class="conn" id="conn" data-state="off">Connecting</span>
+  </div>
+</header>
+
+<div class="alert" id="alert" hidden></div>
+
+<main id="board" class="board"></main>
+
+<p class="empty" id="empty" hidden>
+  No orders on the pass.<br><span>New orders appear here the moment a table sends them.</span>
+</p>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/shared/events.js"></script>
+<script src="/kitchen/app.js"></script>
+</body>
+</html>

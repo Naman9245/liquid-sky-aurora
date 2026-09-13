@@ -19,3 +19,7 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# ─── Ported ordering system ───────────────────────────────────────────
+node_modules/
+server/data/

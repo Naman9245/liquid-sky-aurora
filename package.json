@@ -1,0 +1,31 @@
+{
+  "name": "liquid-sky-ordering",
+  "version": "0.1.0",
+  "private": true,
+  "description": "QR table ordering for Liquid Sky Family Fine Dine & Bar, Yelahanka, Bengaluru",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env server/index.js",
+    "start": "node --env-file-if-exists=.env server/index.js",
+    "seed": "node --env-file-if-exists=.env server/seed.js",
+    "reseed": "node --env-file-if-exists=.env server/seed.js --force",
+    "test": "node --env-file-if-exists=.env scripts/e2e.js && node --env-file-if-exists=.env scripts/e2e-stations.js && node --env-file-if-exists=.env scripts/e2e-dayparts.js && node --env-file-if-exists=.env scripts/e2e-bill.js && node --env-file-if-exists=.env scripts/e2e-print.js && node --env-file-if-exists=.env scripts/e2e-analytics.js && node --env-file-if-exists=.env scripts/e2e-i18n.js && node --env-file-if-exists=.env scripts/e2e-assistant.js && node --env-file-if-exists=.env scripts/e2e-gst.js",
+    "set-pin": "node --env-file-if-exists=.env scripts/set-pin.js",
+    "test:core": "node --env-file-if-exists=.env scripts/e2e.js",
+    "demo-data": "node --env-file-if-exists=.env scripts/demo-data.js",
+    "set-key": "bash scripts/set-key.sh"
+  },
+  "dependencies": {
+    "@google/genai": "^2.22.0",
+    "better-sqlite3": "^11.5.0",
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.1"
+  }
+}

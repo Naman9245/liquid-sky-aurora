@@ -252,7 +252,7 @@
 
   function shot(img, name, cls) {
     return '<img loading="lazy" decoding="async" class="' + cls + '" ' +
-           'src="photos/dish/' + img + '.webp" alt="' + esc(name) + '" />';
+           'src="/site/photos/dish/' + img + '.webp" alt="' + esc(name) + '" />';
   }
 
   (function renderPlates() {
@@ -281,7 +281,7 @@
       return '<article class="pour reveal" style="--delay:' + (i * 70) + 'ms">' +
         '<div class="pour-shot">' + shot(d.img, d.name, 'pour-img') +
           '<span class="pour-reflect" aria-hidden="true">' +
-            '<img loading="lazy" decoding="async" src="photos/dish/' + d.img + '.webp" alt="" />' +
+            '<img loading="lazy" decoding="async" src="/site/photos/dish/' + d.img + '.webp" alt="" />' +
           '</span>' +
         '</div>' +
         '<div class="pour-body">' +
@@ -1161,9 +1161,10 @@
        inside a CSS variable resolves against the stylesheet that consumes
        it (assets/app.css), so "photos/x.jpg" became "assets/photos/x.jpg"
        and silently 404'd. An inline background-image resolves against the
-       document, which is what we want. */
+       DOCUMENT — and the document is now served at /, not from this
+       folder, so the path has to be absolute or it 404s the other way. */
     if (top && bot) {
-      var img = 'url("photos/rooftopDusk.jpg")';
+      var img = 'url("/site/photos/rooftopDusk.jpg")';
       top.style.backgroundImage = img;
       bot.style.backgroundImage = img;
     }
@@ -1280,34 +1281,48 @@
      which is exactly what should happen on a static host. */
   (function liveMenu() {
     if (!window.fetch) return;
-    /* 'no-cache' means revalidate, not "never cache". The menu is sent with
-       max-age=60, and on the default policy the browser answered from its
-       own copy without asking — so a dish the kitchen had just marked off
-       kept showing as orderable for up to a minute, which is precisely the
-       failure this feature exists to prevent. Revalidating still costs
-       almost nothing: an unchanged menu comes back as a 304 with no body. */
-    apiFetch('/api/menu', { timeout: 5000, cache: 'no-cache' }).then(function (m) {
-      if (!m || !m.items || !m.items.length) return;
-      var key = function (cat, name) { return cat + '\u0000' + name; };
-      var byKey = {};
-      for (var i = 0; i < m.items.length; i++) {
-        byKey[key(m.items[i].category, m.items[i].name)] = m.items[i];
+    /* The backend behind this page is the ordering system: the same
+       database the pass, the bar screen and /admin read. Its /api/menu
+       returns sections with their items nested, not a flat list, so the
+       287 dishes baked into this page are matched by name — verified
+       unique across the whole card — and refreshed in place.
+
+       'no-cache' means revalidate, not "never cache". On the default
+       policy the browser can answer from its own copy, and a dish the
+       kitchen has just switched off would go on being offered. */
+    apiFetch('/api/menu', { timeout: 6000, cache: 'no-cache' }).then(function (m) {
+      if (!m || !m.categories || !m.categories.length) return;
+      var byName = {};
+      for (var c = 0; c < m.categories.length; c++) {
+        var list = m.categories[c].items || [];
+        for (var k = 0; k < list.length; k++) byName[list[k].name.toLowerCase()] = list[k];
       }
-      var repriced = 0, sold = 0, matched = 0;
+      /* /api/menu returns only what the kitchen currently has on. A dish
+         switched off does not come back marked unavailable — it is simply
+         absent. So "missing from the payload" IS the off signal, and an
+         overlay that only updated the rows it found left a sold-out drink
+         looking orderable. */
+      var matched = 0;
       for (var j = 0; j < DATA.items.length; j++) {
-        var it = DATA.items[j];
-        var row = byKey[key(it[1], it[0])];
-        if (!row) continue;
-        matched++;
-        if (typeof row.price === 'number' && row.price !== it[2]) { it[2] = row.price; repriced++; }
-        it[4] = row.available !== false;
-        it[5] = row.id;
-        if (!it[4]) sold++;
+        if (byName[String(DATA.items[j][0]).toLowerCase()]) matched++;
       }
-      if (!matched) return;                 /* a menu we do not recognise */
+      /* Guard against pointing this page at a different restaurant's
+         menu: if barely anything lines up, change nothing at all rather
+         than greying out the entire card. */
+      if (matched < DATA.items.length * 0.6) return;
+
+      var repriced = 0, off = 0;
+      for (var k2 = 0; k2 < DATA.items.length; k2++) {
+        var it = DATA.items[k2];
+        var row = byName[String(it[0]).toLowerCase()];
+        if (!row) { it[4] = false; off++; continue; }
+        if (typeof row.price === 'number' && row.price !== it[2]) { it[2] = row.price; repriced++; }
+        it[4] = true;
+        it[5] = row.id;
+      }
       API.live = true;
       renderMenu();
-      if (sold) toast(sold + (sold === 1 ? ' dish is' : ' dishes are') + ' off tonight');
-    }).catch(function () { /* static host or server down — keep the baked menu */ });
+      if (off) toast(off + (off === 1 ? ' dish is' : ' dishes are') + ' off tonight');
+    }).catch(function () { /* server down — the baked menu still stands */ });
   })();
 })();

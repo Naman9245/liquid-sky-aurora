@@ -1,0 +1,36 @@
+/* Staff sign in — used on the kitchen tablet, often with wet or gloved hands. */
+:root{
+  color-scheme:dark;
+  --bg:#12150f; --panel:#1b2017; --line:#2c3327; --ink:#eef2ea; --muted:#95a191;
+  --leaf:#3fb46b; --red:#e4584a;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);min-height:100vh;
+  display:grid;place-items:center;padding:24px;
+  font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--leaf);outline-offset:3px}
+
+.pad{width:100%;max-width:330px;text-align:center}
+.head h1{margin:0;font-size:23px;font-weight:700;letter-spacing:-.01em}
+.head p{margin:5px 0 0;color:var(--muted);font-size:14px;letter-spacing:.05em;text-transform:uppercase}
+
+.dots{display:flex;justify-content:center;gap:14px;margin:34px 0 8px;min-height:20px}
+.dots i{width:15px;height:15px;border-radius:50%;border:2px solid var(--line);display:block}
+.dots i.on{background:var(--leaf);border-color:var(--leaf)}
+
+.err{background:#33201c;color:#f0a89e;border:1px solid #5a2f29;border-radius:9px;
+  padding:11px 14px;font-size:14px;line-height:1.45;margin:14px 0 0}
+
+.keys{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-top:24px}
+.keys button{background:var(--panel);border:1px solid var(--line);color:var(--ink);
+  border-radius:12px;font-size:26px;font-weight:600;padding:0;height:68px;
+  font-variant-numeric:tabular-nums}
+.keys button:active{background:#252c1f;transform:scale(.97)}
+.keys .sub{font-size:15px;font-weight:600;color:var(--muted)}
+.keys .go{background:var(--leaf);border-color:var(--leaf);color:#04180c;font-size:28px;font-weight:800}
+.keys button:disabled{opacity:.5}
+
+.hint{color:var(--muted);font-size:13px;margin-top:26px;line-height:1.5}
+@media (prefers-reduced-motion:reduce){.keys button:active{transform:none}}
