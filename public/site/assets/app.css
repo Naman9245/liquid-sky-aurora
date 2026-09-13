@@ -103,8 +103,11 @@ p { line-height: 1.65; }
 .glass {
   position: relative;
   background: var(--glass);
-  -webkit-backdrop-filter: blur(22px) saturate(1.25);
-  backdrop-filter: blur(22px) saturate(1.25);
+  /* Radius drives the cost of a blur. 22px to 14px is not a step anyone
+     can see through a translucent panel, and it is materially cheaper on
+     every frame the sky moves underneath. */
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
   border: 1px solid var(--glass-edge);
   border-radius: 18px;
   box-shadow:
@@ -137,7 +140,12 @@ p { line-height: 1.65; }
   background: rgba(255,255,255,.07); color: var(--ink); cursor: pointer;
   text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
   transition: transform .18s cubic-bezier(.22,.61,.36,1), background .2s, border-color .2s;
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  /* No backdrop-filter. There were 21 buttons on this page and every one
+     was its own compositing layer re-blurring the backdrop — over a sky
+     canvas that repaints continuously, that is 21 blurs a frame for
+     0.11 MP of effect nobody can see, because a button sits INSIDE a
+     glass panel whose backdrop is already blurred. Blurring an
+     already-blurred surface returns the same pixels at full price. */
 }
 .btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.34); }
 .btn:active { transform: translateY(0) scale(.98); }
@@ -350,8 +358,7 @@ p { line-height: 1.65; }
 .menu-search input {
   width: 100%; font: inherit; font-size: 14px; color: var(--ink);
   padding: 13px 16px; border-radius: 999px;
-  border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-edge); background: rgba(255,255,255,.10);
 }
 .menu-search input::placeholder { color: var(--ink-faint); }
 /* ---- veg / non-veg switch ------------------------------------------
@@ -359,8 +366,7 @@ p { line-height: 1.65; }
    non-vegetarian item at all (breads, sides, desserts and the whole bar),
    so a plain two-way toggle would have no way back to the full 287. */
 .diet { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px;
-        border: 1px solid var(--glass-edge); background: rgba(255,255,255,.07);
-        -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+        border: 1px solid var(--glass-edge); background: rgba(255,255,255,.10); }
 .diet-opt {
   display: inline-flex; align-items: center; gap: 7px;
   font-family: var(--mono); font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase;

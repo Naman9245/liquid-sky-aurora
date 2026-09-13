@@ -78,18 +78,24 @@
 
     var running = true, raf = 0;
 
-    /* The canvas is fixed to the viewport, so it never scrolls away and
-       kept shading every pixel at 60fps for the whole session — including
-       far down the menu, where the only sky anyone can see is a few
-       blurred slivers behind glass. Below the hero it drops to ~20fps,
-       which is about a third of the GPU work and is genuinely invisible
-       through a 22px backdrop blur. Full rate returns at the top, where
-       the sky is the thing you are actually looking at. */
-    var minGap = 0, last = -1e9;
+    /* The canvas is fixed to the viewport, so it never scrolls away. It
+       used to shade every pixel at 60fps for the whole session, and that
+       cost is not just the shader: a dozen glass panels sit on top with
+       backdrop-filter, and every repaint of the sky forces every one of
+       them to re-blur. Two and a half megapixels of blur, sixty times a
+       second, to animate something the guest is seeing through frosted
+       glass while they read a menu.
+
+       Throttling to 20fps helped and was still wrong. Below the hero the
+       sky is STOPPED — a still frame, which lets the compositor keep the
+       blurred results instead of rebuilding them. It restarts the moment
+       the hero comes back, where the sky is the thing you are looking
+       at and motion is the whole point. */
+    var live = true, last = -1e9;
     function frame(ms) {
       raf = requestAnimationFrame(frame);
-      if (!running) return;
-      if (ms - last < minGap) return;
+      if (!running || !live) return;
+      if (ms - last < 16) return;
       last = ms;
       sky.draw(ms / 1000);
     }
@@ -98,7 +104,7 @@
     var hero = document.querySelector('.hero');
     if (hero && 'IntersectionObserver' in window) {
       new IntersectionObserver(function (entries) {
-        minGap = entries[0].isIntersecting ? 0 : 50;      /* 0 = uncapped, 50ms ≈ 20fps */
+        live = entries[0].isIntersecting;
       }, { threshold: 0 }).observe(hero);
     }
 

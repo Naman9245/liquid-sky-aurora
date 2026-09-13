@@ -36,7 +36,7 @@
     '}',
     'float fbm(vec2 p){',
     '  float v = 0.0, a = 0.5;',
-    '  for(int i = 0; i < 5; i++){ v += a * noise(p); p *= 2.02; a *= 0.5; }',
+    '  for(int i = 0; i < 3; i++){ v += a * noise(p); p *= 2.02; a *= 0.5; }',
     '  return v;',
     '}',
     '',
@@ -168,10 +168,20 @@
 
     var api = { gl: gl, tod: opts.tod != null ? opts.tod : timeOfDay(), frames: 0, running: false };
 
-    /* Cap the buffer: a full-viewport fragment shader is fill-bound, and
-       on a 4K panel at DPR 2 this would shade 8x the pixels for no gain. */
+    /* This shader is fill-bound, and it was the reason the page dragged.
+       Every pixel ran five fbm() calls of five octaves each — twenty-five
+       noise evaluations per pixel, per frame, across the whole viewport.
+       On a 1080p panel at DPR 2 that is about eighty million evaluations a
+       frame, and a dozen backdrop-filter panels re-blurring on top of it.
+
+       Two cuts, neither of them visible: three octaves instead of five,
+       and a backing store at 0.55x stretched by CSS. Nothing in this sky
+       has a hard edge — it is a slow gradient with drifting cloud — so
+       resolution buys nothing, and together these shade roughly a sixth
+       of the arithmetic per frame. */
+    var RENDER_SCALE = 0.55;
     api.resize = function () {
-      var dpr = Math.min(global.devicePixelRatio || 1, 1.5);
+      var dpr = Math.min(global.devicePixelRatio || 1, 1.25) * RENDER_SCALE;
       var w = Math.max(1, Math.round(canvas.clientWidth * dpr));
       var h = Math.max(1, Math.round(canvas.clientHeight * dpr));
       if (canvas.width === w && canvas.height === h) return;
